@@ -165,13 +165,9 @@ module.exports = function (inputArgs) {
         }
         return cli(inputArgs);
     }).then(function () {
-        if (!isTelemetryCmd) {
-            telemetry.track(cmd, subcommand, 'successful');
-        }
+        telemetry.track(cmd, subcommand, 'successful');
     }).catch(function (err) {
-        if (!isTelemetryCmd) {
-            telemetry.track(cmd, subcommand, 'unsuccessful');
-        }
+        telemetry.track(cmd, subcommand, 'unsuccessful');
         throw err;
     });
 };
@@ -189,40 +185,19 @@ function printHelp (command) {
 }
 
 function handleTelemetryCmd (subcommand) {
-
     if (subcommand !== 'on' && subcommand !== 'off') {
         logger.subscribe(events);
         printHelp('telemetry');
         return;
     }
 
-    var turnOn = subcommand === 'on';
-    var cmdSuccess = true;
-    const wasOptedIn = telemetry.isOptedIn();
-
     // turn telemetry on or off
-    try {
-        if (turnOn) {
-            telemetry.turnOn();
-            console.log('Thanks for opting into telemetry to help us improve cordova.');
-        } else {
-            telemetry.turnOff();
-            console.log('You have been opted out of telemetry. To change this, run: cordova telemetry on.');
-        }
-    } catch (ex) {
-        cmdSuccess = false;
-    }
-
-    // track or not track ?, that is the question
-
-    if (!turnOn) {
-        // Always track telemetry opt-outs (whether user opted out or not!)
-        telemetry.track('telemetry', 'off', 'via-cordova-telemetry-cmd', cmdSuccess ? 'successful' : 'unsuccessful');
-        return;
-    }
-
-    if (wasOptedIn) {
-        telemetry.track('telemetry', 'on', 'via-cordova-telemetry-cmd', cmdSuccess ? 'successful' : 'unsuccessful');
+    if (subcommand === 'on') {
+        telemetry.turnOn();
+        console.log('Thanks for opting into telemetry to help us improve cordova.');
+    } else {
+        telemetry.turnOff();
+        console.log('You have been opted out of telemetry. To change this, run: cordova telemetry on.');
     }
 }
 

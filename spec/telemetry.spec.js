@@ -173,7 +173,7 @@ describe('telemetry', () => {
             it('tracks the user decision [T014]', () => {
                 return telemetry.showPrompt().then(_ => {
                     expect(telemetry.track).toHaveBeenCalledWith(
-                        'telemetry', 'on', 'via-cli-prompt-choice', 'successful'
+                        'telemetry', 'on', 'via-cli-prompt-choice'
                     );
                     expect(Insight.prototype._save).toHaveBeenCalled();
                 });
@@ -202,7 +202,7 @@ describe('telemetry', () => {
             it('tracks the user decision [T017]', () => {
                 return telemetry.showPrompt().then(_ => {
                     expect(telemetry.track).toHaveBeenCalledWith(
-                        'telemetry', 'off', 'via-cli-prompt-choice', 'successful'
+                        'telemetry', 'off', 'via-cli-prompt-choice'
                     );
                     expect(Insight.prototype._save).toHaveBeenCalled();
                 });
