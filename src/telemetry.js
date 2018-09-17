@@ -18,11 +18,13 @@
 // For further details on telemetry, see:
 // https://github.com/cordova/cordova-discuss/pull/43
 
-// Google Analytics tracking code
-var GA_TRACKING_CODE = 'UA-64283057-7';
+const { EOL } = require('os');
+const pkg = require('../package.json');
+const Insight = require('insight');
 
-var pkg = require('../package.json');
-var Insight = require('insight');
+// Google Analytics tracking code
+const GA_TRACKING_CODE = 'UA-64283057-7';
+const PROMPT_MESSAGE = 'May Cordova anonymously report usage statistics to improve the tool over time?';
 
 /**
  * By redefining `get optOut` we trick Insight into tracking
@@ -34,7 +36,7 @@ class RelentlessInsight extends Insight {
     get realOptOut () { return super.optOut; }
 }
 
-var insight = new RelentlessInsight({
+const insight = new RelentlessInsight({
     trackingCode: GA_TRACKING_CODE,
     pkg: pkg
 });
@@ -43,10 +45,8 @@ var insight = new RelentlessInsight({
  * Returns true if the user opted in, and false otherwise
  */
 function showPrompt () {
-    return new Promise(function (resolve, reject) {
-        var msg = 'May Cordova anonymously report usage statistics to improve the tool over time?';
-        insight.askPermission(msg, function (unused, optIn) {
-            var EOL = require('os').EOL;
+    return new Promise((resolve, reject) => {
+        insight.askPermission(PROMPT_MESSAGE, (_, optIn) => {
             if (optIn) {
                 console.log(EOL + 'Thanks for opting into telemetry to help us improve cordova.');
                 exports.track('telemetry', 'on', 'via-cli-prompt-choice', 'successful');
