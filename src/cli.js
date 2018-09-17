@@ -164,12 +164,13 @@ module.exports = function (inputArgs) {
             return handleTelemetryCmd(subcommand);
         }
         return cli(inputArgs);
-    }).then(function () {
-        telemetry.track(cmd, subcommand, 'successful');
-    }).catch(function (err) {
-        telemetry.track(cmd, subcommand, 'unsuccessful');
-        throw err;
-    });
+    }).then(
+        () => telemetry.track(cmd, subcommand, 'successful'),
+        err => {
+            telemetry.track(cmd, subcommand, 'unsuccessful');
+            throw err;
+        }
+    );
 };
 
 function getSubCommand (args, cmd) {
