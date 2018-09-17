@@ -85,14 +85,6 @@ describe('telemetry', () => {
         });
     });
 
-    describe('clear', () => {
-        it('clears telemetry setting [T005]', () => {
-            telemetry.clear();
-            expect(insight.config.set)
-                .toHaveBeenCalledWith('optOut', undefined);
-        });
-    });
-
     describe('turnOn', () => {
         it('enables the telemetry setting [T006]', () => {
             telemetry.turnOn();
@@ -222,8 +214,8 @@ describe('telemetry', () => {
                 // To silence the prompts by insight
                 spyOn(process.stdout, 'write');
 
-                // Ensure that prompts are shown for 10ms at most
-                telemetry.timeoutInSecs = 0.01;
+                // Ensure that prompts are shown as shortly as possible
+                insight._permissionTimeout = 0;
             });
             afterEach(() => {
                 stdin.restore();

@@ -45,7 +45,6 @@ var insight = new RelentlessInsight({
 function showPrompt () {
     return new Promise(function (resolve, reject) {
         var msg = 'May Cordova anonymously report usage statistics to improve the tool over time?';
-        insight._permissionTimeout = module.exports.timeoutInSecs || 30;
         insight.askPermission(msg, function (unused, optIn) {
             var EOL = require('os').EOL;
             if (optIn) {
@@ -75,15 +74,6 @@ function turnOff () {
     insight.optOut = true;
 }
 
-/**
- * Clears telemetry setting
- * Has the same effect as if user never answered the telemetry prompt
- * Useful for testing purposes
- */
-function clear () {
-    insight.optOut = undefined;
-}
-
 function isOptedIn () {
     return !insight.realOptOut;
 }
@@ -110,16 +100,13 @@ function isNoTelemetryFlag (args) {
     return args.indexOf('--no-telemetry') > -1;
 }
 
-// this is to help testing, so we don't have to wait for the full 30
 module.exports = {
     track: track,
     turnOn: turnOn,
     turnOff: turnOff,
-    clear: clear,
     isOptedIn: isOptedIn,
     hasUserOptedInOrOut: hasUserOptedInOrOut,
     isCI: isCI,
     showPrompt: showPrompt,
-    isNoTelemetryFlag: isNoTelemetryFlag,
-    timeoutInSecs: 30
+    isNoTelemetryFlag: isNoTelemetryFlag
 };
