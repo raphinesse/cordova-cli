@@ -82,8 +82,7 @@ function isOptedIn () {
  * Has the user already answered the telemetry prompt? (thereby opting in or out?)
  */
 function hasUserOptedInOrOut () {
-    var insightOptOut = insight.realOptOut === undefined;
-    return !(insightOptOut);
+    return insight.realOptOut !== undefined;
 }
 
 /**
@@ -97,7 +96,7 @@ function isCI (env) {
  * Has the user ran a command of the form: `cordova run --no-telemetry` ?
  */
 function isNoTelemetryFlag (args) {
-    return args.indexOf('--no-telemetry') > -1;
+    return args.includes('--no-telemetry');
 }
 
 module.exports = exports = {
