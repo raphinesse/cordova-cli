@@ -49,11 +49,11 @@ function showPrompt () {
             var EOL = require('os').EOL;
             if (optIn) {
                 console.log(EOL + 'Thanks for opting into telemetry to help us improve cordova.');
-                module.exports.track('telemetry', 'on', 'via-cli-prompt-choice', 'successful');
+                exports.track('telemetry', 'on', 'via-cli-prompt-choice', 'successful');
             } else {
                 console.log(EOL + 'You have been opted out of telemetry. To change this, run: cordova telemetry on.');
                 // Always track telemetry opt-outs! (whether opted-in or opted-out)
-                module.exports.track('telemetry', 'off', 'via-cli-prompt-choice', 'successful');
+                exports.track('telemetry', 'off', 'via-cli-prompt-choice', 'successful');
             }
             resolve(optIn);
         });
@@ -100,7 +100,7 @@ function isNoTelemetryFlag (args) {
     return args.indexOf('--no-telemetry') > -1;
 }
 
-module.exports = {
+module.exports = exports = {
     track: track,
     turnOn: turnOn,
     turnOff: turnOff,
