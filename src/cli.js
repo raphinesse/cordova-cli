@@ -171,11 +171,9 @@ module.exports = function (inputArgs) {
 
         /**
          * We shouldn't prompt for telemetry if user issues a command of the form: `cordova telemetry on | off | ...x`
-         * Also, if the user has already been prompted and made a decision, use his saved answer
          */
         if (isTelemetryCmd) {
-            var isOptedIn = telemetry.isOptedIn();
-            return handleTelemetryCmd(subcommand, isOptedIn);
+            return handleTelemetryCmd(subcommand);
         }
 
         if (telemetry.hasUserOptedInOrOut()) {
@@ -217,7 +215,7 @@ function printHelp (command) {
     cordova.emit('results', result);
 }
 
-function handleTelemetryCmd (subcommand, isOptedIn) {
+function handleTelemetryCmd (subcommand) {
 
     if (subcommand !== 'on' && subcommand !== 'off') {
         logger.subscribe(events);
@@ -227,6 +225,7 @@ function handleTelemetryCmd (subcommand, isOptedIn) {
 
     var turnOn = subcommand === 'on';
     var cmdSuccess = true;
+    const wasOptedIn = telemetry.isOptedIn();
 
     // turn telemetry on or off
     try {
@@ -246,14 +245,12 @@ function handleTelemetryCmd (subcommand, isOptedIn) {
     if (!turnOn) {
         // Always track telemetry opt-outs (whether user opted out or not!)
         telemetry.track('telemetry', 'off', 'via-cordova-telemetry-cmd', cmdSuccess ? 'successful' : 'unsuccessful');
-        return Promise.resolve();
+        return;
     }
 
-    if (isOptedIn) {
+    if (wasOptedIn) {
         telemetry.track('telemetry', 'on', 'via-cordova-telemetry-cmd', cmdSuccess ? 'successful' : 'unsuccessful');
     }
-
-    return Promise.resolve();
 }
 
 function cli (inputArgs) {
