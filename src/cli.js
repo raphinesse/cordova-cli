@@ -97,8 +97,6 @@ function checkForUpdates () {
     }
 }
 
-var shouldCollectTelemetry = false;
-
 module.exports = function (inputArgs) {
     // If no inputArgs given, use process.argv.
     inputArgs = inputArgs || process.argv;
@@ -158,45 +156,20 @@ module.exports = function (inputArgs) {
     }
 
     return Promise.resolve().then(function () {
-        /**
-         * Skip telemetry prompt if:
-         * - CI environment variable is present
-         * - Command is run with `--no-telemetry` flag
-         * - Command ran is: `cordova telemetry on | off | ...`
-         */
-
-        if (telemetry.isCI(process.env) || telemetry.isNoTelemetryFlag(inputArgs)) {
-            return Promise.resolve(false);
-        }
-
-        /**
-         * We shouldn't prompt for telemetry if user issues a command of the form: `cordova telemetry on | off | ...x`
-         */
+        // Let telemetry module decide whether track is a no-op or not.
+        // Possibly by prompting the user.
+        return telemetry.initialize(inputArgs);
+    }).then(function () {
         if (isTelemetryCmd) {
             return handleTelemetryCmd(subcommand);
         }
-
-        if (telemetry.hasUserOptedInOrOut()) {
-            return Promise.resolve(telemetry.isOptedIn());
-        }
-
-        /**
-         * Otherwise, prompt user to opt-in or out
-         * Note: the prompt is shown for 30 seconds. If no choice is made by that time, User is considered to have opted out.
-         */
-        return telemetry.showPrompt();
-    }).then(function (collectTelemetry) {
-        shouldCollectTelemetry = collectTelemetry;
-        if (isTelemetryCmd) {
-            return Promise.resolve();
-        }
         return cli(inputArgs);
     }).then(function () {
-        if (shouldCollectTelemetry && !isTelemetryCmd) {
+        if (!isTelemetryCmd) {
             telemetry.track(cmd, subcommand, 'successful');
         }
     }).catch(function (err) {
-        if (shouldCollectTelemetry && !isTelemetryCmd) {
+        if (!isTelemetryCmd) {
             telemetry.track(cmd, subcommand, 'unsuccessful');
         }
         throw err;
@@ -266,9 +239,7 @@ function cli (inputArgs) {
             logger.error(err);
         }
         // Don't send exception details, just send that it happened
-        if (shouldCollectTelemetry) {
-            telemetry.track('uncaughtException');
-        }
+        telemetry.track('uncaughtException');
         process.exit(1);
     });
 

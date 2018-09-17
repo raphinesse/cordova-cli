@@ -104,11 +104,19 @@ describe('telemetry', () => {
     describe('track', () => {
         beforeEach(() => {
             spyOn(Insight.prototype, 'track');
+            insight.config.optOut = false;
+            telemetry.initialize();
         });
 
-        it('calls insight.track [T008]', () => {
+        it('calls insight.track if opted-in [T008]', () => {
             telemetry.track();
             expect(insight.track).toHaveBeenCalled();
+        });
+
+        it('does NOT call insight.track if NOT opted-in [T026]', () => {
+            insight.config.optOut = true;
+            telemetry.track();
+            expect(insight.track).not.toHaveBeenCalled();
         });
 
         it('passes its arguments to insight.track [T009]', () => {
@@ -248,8 +256,10 @@ describe('telemetry', () => {
 
             it('does NOT show prompt when running on a CI [T020]', () => {
                 process.env.CI = 1;
+                spyOn(insight, 'track');
                 return telemetry.showPrompt().then(result => {
                     expect(result).toBe(false);
+                    expect(insight.track).not.toHaveBeenCalled();
                     expect(insight.config.set).not.toHaveBeenCalled();
                     expect(process.stdout.write).not.toHaveBeenCalled();
                 });

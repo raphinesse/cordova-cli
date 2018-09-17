@@ -41,6 +41,25 @@ const insight = new RelentlessInsight({
     pkg: pkg
 });
 
+let trackOverride;
+
+function initialize (args = []) {
+    Promise.resolve().then(() => {
+        // Never track if user gave the --no-telemetry flag
+        if (args.includes('--no-telemetry')) {
+            return (trackOverride = 'never');
+        }
+
+        // Always track if user runs `cordova telemetry`
+        if (args[2] === 'telemetry') {
+            return (trackOverride = 'always');
+        }
+
+        // Get saved telemetry decision or prompt user for it
+        return ensureUserDecision();
+    });
+}
+
 /**
  * Returns true if the user opted in, and false otherwise
  */
@@ -60,7 +79,34 @@ function showPrompt () {
     });
 }
 
+/**
+ * Show telemetry prompt to user unless saved decision is available.
+ * If no choice is made within 30 seconds opt-out is assumed.
+ *
+ * @return {boolean} true iff user opted in to telemetry
+ */
+function ensureUserDecision () {
+    return Promise.resolve().then(_ =>
+        exports.hasUserOptedInOrOut() ?
+            exports.isOptedIn() :
+            exports.showPrompt()
+    );
+}
+
+function shouldTrack () {
+    switch (trackOverride) {
+    case 'always':
+        return true;
+    case 'never':
+        return false;
+    default:
+        return exports.isOptedIn();
+    }
+}
+
 function track (...args) {
+    if (!shouldTrack()) return;
+
     // Remove empty, null or undefined strings from arguments
     const filteredArgs = args.filter(val => val && val.length !== 0);
     insight.track(...filteredArgs);
@@ -85,27 +131,12 @@ function hasUserOptedInOrOut () {
     return insight.realOptOut !== undefined;
 }
 
-/**
- * Is the environment variable 'CI' specified ?
- */
-function isCI (env) {
-    return !!env.CI;
-}
-
-/**
- * Has the user ran a command of the form: `cordova run --no-telemetry` ?
- */
-function isNoTelemetryFlag (args) {
-    return args.includes('--no-telemetry');
-}
-
 module.exports = exports = {
+    initialize,
     track: track,
     turnOn: turnOn,
     turnOff: turnOff,
     isOptedIn: isOptedIn,
     hasUserOptedInOrOut: hasUserOptedInOrOut,
-    isCI: isCI,
-    showPrompt: showPrompt,
-    isNoTelemetryFlag: isNoTelemetryFlag
+    showPrompt: showPrompt
 };

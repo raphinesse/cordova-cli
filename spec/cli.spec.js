@@ -258,8 +258,7 @@ describe('cordova cli', () => {
             spyOnProperty(Insight.prototype, 'optOut', 'set')
                 .and.callFake(x => { isOptedOut = x; });
 
-            // Set a normal opted-in user as default
-            spyOn(telemetry, 'isCI').and.returnValue(false);
+            // Set a opted-in user as default
             isOptedOut = false;
         });
 
@@ -306,14 +305,6 @@ describe('cordova cli', () => {
 
             return cli(['node', 'cordova', 'prepare']).then(() => {
                 expect(telemetry.showPrompt).toHaveBeenCalled();
-            });
-        });
-
-        it('Test#029 : is NOT collected in CI environments', () => {
-            telemetry.isCI.and.returnValue(true);
-
-            return cli(['node', 'cordova', '--version']).then(() => {
-                expect(telemetry.track).not.toHaveBeenCalled();
             });
         });
 
