@@ -75,7 +75,7 @@ function turnOff () {
 }
 
 function isOptedIn () {
-    return !insight.realOptOut;
+    return insight.realOptOut === false;
 }
 
 /**

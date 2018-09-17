@@ -79,8 +79,8 @@ describe('telemetry', () => {
             expect(insight.config.get).toHaveBeenCalledTimes(2);
         });
 
-        it('is true if user did not yet decide [T004]', () => {
-            expect(telemetry.isOptedIn()).toBe(true);
+        it('is false if user did not yet decide [T004]', () => {
+            expect(telemetry.isOptedIn()).toBe(false);
             expect(insight.config.get).toHaveBeenCalledWith('optOut');
         });
     });
