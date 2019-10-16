@@ -138,6 +138,7 @@ module.exports = exports = {
     track: track,
     turnOn: turnOn,
     turnOff: turnOff,
+    // TODO drop these from exports
     isOptedIn: isOptedIn,
     hasUserOptedInOrOut: hasUserOptedInOrOut,
     showPrompt: showPrompt
