@@ -216,7 +216,7 @@ function cli (inputArgs) {
         }
         // Don't send exception details, just send that it happened
         telemetry.track('uncaughtException');
-        process.exit(1);
+        process.exitCode = 1;
     });
 
     logger.subscribe(events);
