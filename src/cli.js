@@ -158,7 +158,7 @@ module.exports = function (inputArgs) {
     return Promise.resolve().then(function () {
         // Let telemetry module decide whether track is a no-op or not.
         // Possibly by prompting the user.
-        return telemetry.initialize(inputArgs);
+        return telemetry.initialize({ argv: inputArgs, env: process.env });
     }).then(function () {
         if (isTelemetryCmd) {
             return handleTelemetryCmd(subcommand);

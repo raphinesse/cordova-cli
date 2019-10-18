@@ -254,10 +254,11 @@ describe('telemetry', () => {
                 });
             });
 
+            // TODO make this an init test
             it('does NOT show prompt when running on a CI [T020]', () => {
                 process.env.CI = 1;
                 // Re-init so modules notices new env
-                return telemetry.initialize()
+                return telemetry.initialize({ env: process.env })
                     .then(() => telemetry.showPrompt())
                     .then(result => {
                         expect(result).toBe(false);

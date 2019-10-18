@@ -43,14 +43,14 @@ const insight = new RelentlessInsight({
 
 let isEnabled;
 
-function initialize (args = []) {
+function initialize ({ argv = [], env = {} }) {
     return Promise.resolve().then(() => {
         // Never track if on CI or user gave the --no-telemetry flag
-        isEnabled = !args.includes('--no-telemetry') && !process.env.CI;
+        isEnabled = !argv.includes('--no-telemetry') && !env.CI;
         if (!isEnabled) return false;
 
         // Never show prompt when running `cordova telemetry`
-        if (args[2] === 'telemetry') return isOptedIn();
+        if (argv[2] === 'telemetry') return isOptedIn();
 
         // Show telemetry prompt to user unless saved decision is available.
         // If no choice is made within 30 seconds opt-out is assumed.
