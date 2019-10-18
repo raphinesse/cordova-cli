@@ -41,22 +41,22 @@ const insight = new RelentlessInsight({
     pkg: pkg
 });
 
-let trackOverride;
+let isEnabled;
 
 function initialize (args = []) {
-    Promise.resolve().then(() => {
-        // Never track if user gave the --no-telemetry flag
-        if (args.includes('--no-telemetry')) {
-            return (trackOverride = 'never');
-        }
+    return Promise.resolve().then(() => {
+        // Never track if on CI or user gave the --no-telemetry flag
+        isEnabled = !args.includes('--no-telemetry') && !process.env.CI;
+        if (!isEnabled) return false;
 
-        // Always track if user runs `cordova telemetry`
-        if (args[2] === 'telemetry') {
-            return (trackOverride = 'always');
-        }
+        // Never show prompt when running `cordova telemetry`
+        if (args[2] === 'telemetry') return isOptedIn();
 
-        // Get saved telemetry decision or prompt user for it
-        return ensureUserDecision();
+        // Show telemetry prompt to user unless saved decision is available.
+        // If no choice is made within 30 seconds opt-out is assumed.
+        return exports.hasUserOptedInOrOut()
+            ? exports.isOptedIn()
+            : exports.showPrompt();
     });
 }
 
@@ -72,41 +72,22 @@ function showPrompt () {
             } else {
                 console.log(EOL + 'You have been opted out of telemetry. To change this, run: cordova telemetry on.');
                 // Always track telemetry opt-outs! (whether opted-in or opted-out)
-                exports.track('telemetry', 'off', 'via-cli-prompt-choice');
+                trackIgnoringUserDecision('telemetry', 'off', 'via-cli-prompt-choice');
             }
             resolve(optIn);
         });
     });
 }
 
-/**
- * Show telemetry prompt to user unless saved decision is available.
- * If no choice is made within 30 seconds opt-out is assumed.
- *
- * @return {boolean} true iff user opted in to telemetry
- */
-function ensureUserDecision () {
-    return Promise.resolve().then(_ =>
-        exports.hasUserOptedInOrOut() ?
-            exports.isOptedIn() :
-            exports.showPrompt()
-    );
-}
-
-function shouldTrack () {
-    switch (trackOverride) {
-    case 'always':
-        return true;
-    case 'never':
-        return false;
-    default:
-        return exports.isOptedIn();
-    }
-}
-
 function track (...args) {
-    if (!shouldTrack()) return;
+    if (isEnabled && exports.isOptedIn()) doTrack(...args);
+}
 
+function trackIgnoringUserDecision (...args) {
+    if (isEnabled) doTrack(...args);
+}
+
+function doTrack (...args) {
     // Remove empty, null or undefined strings from arguments
     const filteredArgs = args.filter(val => val && val.length !== 0);
     insight.track(...filteredArgs);
@@ -118,7 +99,7 @@ function turnOn () {
 }
 
 function turnOff () {
-    exports.track('telemetry', 'off', 'via-cordova-telemetry-cmd');
+    trackIgnoringUserDecision('telemetry', 'off', 'via-cordova-telemetry-cmd');
     insight.optOut = true;
 }
 

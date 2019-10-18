@@ -36,6 +36,7 @@ describe('telemetry', () => {
     beforeEach(() => {
         telemetry = rewire('../src/telemetry');
         insight = telemetry.__get__('insight');
+        telemetry.__set__('isEnabled', true);
 
         // Prevent any settings from being persisted during testing
         insight.config = {
@@ -105,7 +106,6 @@ describe('telemetry', () => {
         beforeEach(() => {
             spyOn(Insight.prototype, 'track');
             insight.config.optOut = false;
-            telemetry.initialize();
         });
 
         it('calls insight.track if opted-in [T008]', () => {
@@ -137,7 +137,7 @@ describe('telemetry', () => {
 
         beforeEach(() => {
             spyOn(console, 'log');
-            spyOn(telemetry, 'track').and.callThrough();
+            spyOn(insight, 'track').and.callThrough();
             response = Symbol('response');
             insight.askPermission.and.callFake((_, cb) => {
                 insight.optOut = !response;
@@ -172,7 +172,7 @@ describe('telemetry', () => {
 
             it('tracks the user decision [T014]', () => {
                 return telemetry.showPrompt().then(_ => {
-                    expect(telemetry.track).toHaveBeenCalledWith(
+                    expect(insight.track).toHaveBeenCalledWith(
                         'telemetry', 'on', 'via-cli-prompt-choice'
                     );
                     expect(Insight.prototype._save).toHaveBeenCalled();
@@ -201,7 +201,7 @@ describe('telemetry', () => {
 
             it('tracks the user decision [T017]', () => {
                 return telemetry.showPrompt().then(_ => {
-                    expect(telemetry.track).toHaveBeenCalledWith(
+                    expect(insight.track).toHaveBeenCalledWith(
                         'telemetry', 'off', 'via-cli-prompt-choice'
                     );
                     expect(Insight.prototype._save).toHaveBeenCalled();
@@ -256,13 +256,15 @@ describe('telemetry', () => {
 
             it('does NOT show prompt when running on a CI [T020]', () => {
                 process.env.CI = 1;
-                spyOn(insight, 'track');
-                return telemetry.showPrompt().then(result => {
-                    expect(result).toBe(false);
-                    expect(insight.track).not.toHaveBeenCalled();
-                    expect(insight.config.set).not.toHaveBeenCalled();
-                    expect(process.stdout.write).not.toHaveBeenCalled();
-                });
+                // Re-init so modules notices new env
+                return telemetry.initialize()
+                    .then(() => telemetry.showPrompt())
+                    .then(result => {
+                        expect(result).toBe(false);
+                        expect(insight.track).not.toHaveBeenCalled();
+                        expect(insight.config.set).not.toHaveBeenCalled();
+                        expect(process.stdout.write).not.toHaveBeenCalled();
+                    });
             });
         });
     });

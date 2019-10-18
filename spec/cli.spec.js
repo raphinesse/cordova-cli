@@ -288,9 +288,7 @@ describe('cordova cli', () => {
 
             return cli(['node', 'cordova', 'telemetry', 'off']).then(() => {
                 expect(telemetry.turnOff).toHaveBeenCalled();
-                expect(telemetry.track).toHaveBeenCalledWith('telemetry', 'off', 'successful');
-                expect(telemetry.track).toHaveBeenCalledWith('telemetry', 'off', 'via-cordova-telemetry-cmd');
-                expect(Insight.prototype.track).toHaveBeenCalled();
+                expect(Insight.prototype.track).toHaveBeenCalledWith('telemetry', 'off', 'via-cordova-telemetry-cmd');
                 expect(Insight.prototype._save).toHaveBeenCalled();
             });
         });
