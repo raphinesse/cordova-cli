@@ -276,10 +276,10 @@ describe('telemetry', () => {
             expect(insight._save).toHaveBeenCalled();
         });
 
-        it('does NOT track when user opted out [T023]', () => {
+        it('still tracks when user opted out [T023]', () => {
             insight.config.get.and.returnValue(true);
             insight.track();
-            expect(insight._save).not.toHaveBeenCalled();
+            expect(insight._save).toHaveBeenCalled();
         });
 
         describe('on CI', () => {
